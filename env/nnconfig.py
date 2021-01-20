@@ -1,10 +1,10 @@
 
-_epoch = 15
+_epoch = 30
 _batch_size = 128
 _image_size = 33
 _label_size = 21
 _learning_rate = 1e-4
-_c_dim = 1
+_c_dim = 3
 _is_train = True
 _scale = 3
 

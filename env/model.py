@@ -9,6 +9,7 @@ from utils import (
         prepare_data,
         preprocess,
         show_gray_image,
+        show_image,
         save_data,
         read_data,
         merge
@@ -68,7 +69,7 @@ class SRCNN(object):
         else:
             results = self.model.predict(x = train_data)
             result = merge(results, [nx, ny])
-            show_gray_image(result)
+            #show_image(result)
 
     def data_dir(self):
         if self.flags.is_train:
@@ -89,8 +90,8 @@ class SRCNN(object):
         if self.flags.is_train:
             for i in range(len(imgs_path_sequence)):
                 input_, label_ = preprocess(imgs_path_sequence[i], self.flags.scale, self.flags.is_grayscale)
-                #show_gray_image(input_)
-                #show_gray_image(label_)
+                #show_image(input_)
+                #show_image(label_)
                 if len(input_.shape) == 3:
                     h, w, _ = input_.shape
                 else:
@@ -100,17 +101,17 @@ class SRCNN(object):
                     for y in range(0, w - self.flags.image_size + 1, self.flags.stride):
                         sub_input = input_[x:x + self.flags.image_size, y:y + self.flags.image_size]  # [33 x 33]
                         sub_label = label_[x+int(padding):x+int(padding)+self.flags.label_size, y+int(padding):y+int(padding)+self.flags.label_size] # [21 x 21]
-                        sub_input = sub_input.reshape([self.flags.image_size, self.flags.image_size, 1])
-                        sub_label = sub_label.reshape([self.flags.label_size, self.flags.label_size, 1])
+                        sub_input = sub_input.reshape([self.flags.image_size, self.flags.image_size, self.flags.c_dim])
+                        sub_label = sub_label.reshape([self.flags.label_size, self.flags.label_size, self.flags.c_dim])
 
                         inputs_sequence.append(sub_input)
                         lables_sequence.append(sub_label)
                         
-                        #show_gray_image(sub_input[int(padding):int(padding)+self.flags.label_size,int(padding):int(padding)+self.flags.label_size])
-                        #show_gray_image(sub_label)
+                        #show_image(sub_input[int(padding):int(padding)+self.flags.label_size,int(padding):int(padding)+self.flags.label_size])
+                        #show_image(sub_label)
         else:
             input_, label_ = preprocess(imgs_path_sequence[1], self.flags.scale, self.flags.is_grayscale)
-            show_gray_image(input_)
+            #show_image(label_)
             if len(input_.shape) == 3:
                 h, w, _ = input_.shape
             else:
@@ -124,9 +125,9 @@ class SRCNN(object):
                     sub_input = input_[x:x + self.flags.image_size, y:y + self.flags.image_size]  # [33 x 33]
                     sub_label = label_[x + int(padding):x + int(padding) + self.flags.label_size,
                                 y + int(padding):y + int(padding) + self.flags.label_size]  # [21 x 21]
-                    sub_input = sub_input.reshape([self.flags.image_size, self.flags.image_size, 1])
-                    sub_label = sub_label.reshape([self.flags.label_size, self.flags.label_size, 1])
-
+                    sub_input = sub_input.reshape([self.flags.image_size, self.flags.image_size, self.flags.c_dim])
+                    sub_label = sub_label.reshape([self.flags.label_size, self.flags.label_size, self.flags.c_dim])
+                    #show_image(sub_label)
                     inputs_sequence.append(sub_input)
                     lables_sequence.append(sub_label)
 

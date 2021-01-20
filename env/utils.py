@@ -19,20 +19,30 @@ def prepare_data(flags, data_path):
 	return data
 
 def preprocess(path, scale = 3, is_grayscale = True):
+	def shapeResize(shape,size):
+		return (int(shape[0]*size),int(shape[1]*size),int(shape[2]))
 	image = imread(path,is_grayscale = is_grayscale)
 	label_ = modcrop(image, scale)
-	image = image / 255.
 	label_ = label_ / 255.
-	input_ = scipy.ndimage.interpolation.zoom(label_, (1. / scale), prefilter=False)
-	input_ = scipy.ndimage.interpolation.zoom(input_, (scale / 1.), prefilter=False)
-
+	input_ = np.zeros(label_.shape)
+	for k in range(3):
+		slice_zoom_in = scipy.ndimage.interpolation.zoom(label_[:, :, k], 1. / scale, prefilter=False)
+		input_[:,:,k] = scipy.ndimage.interpolation.zoom(slice_zoom_in, scale*1.0,prefilter=False)
 	return input_, label_
 
 def imread(path, is_grayscale=True):
+	test = imageio.imread(path)
 	if is_grayscale:
 		return imageio.imread(path, as_gray=True).astype(np.float)
 	else:
 		return imageio.imread(path).astype(np.float)
+
+def show_image(data, scale = 255.0):
+	import matplotlib.pyplot as plt
+	import pylab
+	uint_data = np.uint8(data * scale)
+	plt.imshow(uint_data)
+	plt.show()
 
 def show_gray_image(data):
 	import matplotlib.pyplot as plt
@@ -73,3 +83,28 @@ def merge(images, size):
     img[j*h:j*h+h, i*w:i*w+w, :] = image
 
   return img
+
+
+mat = np.array(
+	[[65.481, 128.553, 24.966],
+	 [-37.797, -74.203, 112.0],
+	 [112.0, -93.786, -18.214]])
+mat_inv = np.linalg.inv(mat)
+
+
+def rgb2ycbcr(rgb_img):
+	ycbcr_img = np.zeros(rgb_img.shape)
+	for x in range(rgb_img.shape[0]):
+		for y in range(rgb_img.shape[1]):
+			ycbcr_img[x, y, :] = np.round(np.dot(mat, rgb_img[x, y, :] * 1.0 / 255) + offset)
+	return ycbcr_img
+
+
+def ycbcr2rgb(ycbcr_img):
+	rgb_img = np.zeros(ycbcr_img.shape, dtype=np.uint8)
+	for x in range(ycbcr_img.shape[0]):
+		for y in range(ycbcr_img.shape[1]):
+			[r, g, b] = ycbcr_img[x, y, :]
+			rgb_img[x, y, :] = np.maximum(0, np.minimum(255,
+			                                            np.round(np.dot(mat_inv, ycbcr_img[x, y, :] - offset) * 255.0)))
+	return rgb_img
